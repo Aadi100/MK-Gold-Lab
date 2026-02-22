@@ -1,122 +1,80 @@
 @import "tailwindcss";
+/* @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap'); */
 
 :root {
-  --background: #0b0b0b;
-  --foreground: #f7f3ea;
-  --accent-gold: #d4af37;
-  --accent-gold-strong: #f6e29a;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --gold: #c9a84c;
+  --gold-light: #e0c47a;
 }
 
 body {
-  background: linear-gradient(135deg, #000000 0%, #0b0b0b 35%, #1a1100 60%, #0b0b0b 85%);
+  background-image: url('/bg.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   min-height: 100vh;
-  position: relative;
   overflow-x: hidden;
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Jost', sans-serif;
 }
 
-/* subtle gold pattern overlay */
+/* Persistent dark overlay so text is always readable */
 body::before {
   content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 8, 5, 0.72);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Gold diagonal pattern on top of overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
     repeating-linear-gradient(
       45deg,
       transparent,
-      transparent 35px,
-      rgba(212, 175, 55, 0.06) 35px,
-      rgba(212, 175, 55, 0.06) 70px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 35px,
-      rgba(212, 175, 55, 0.06) 35px,
-      rgba(212, 175, 55, 0.06) 70px
+      transparent 40px,
+      rgba(201, 168, 76, 0.04) 40px,
+      rgba(201, 168, 76, 0.04) 80px
     );
   pointer-events: none;
+  z-index: 0;
 }
 
-/* Common UI helpers */
-.card-bg {
-  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
-.btn-amber {
-  background: var(--accent-gold);
-  color: #000;
-  border-radius: 6px;
-  padding: 8px 12px;
-}
-.btn-amber:hover { background: var(--accent-gold-strong); }
-
-.product-badge {
-  background: var(--accent-gold-strong);
-  color: #06201a;
-  font-weight: 700;
-  padding: 6px 10px;
-  border-radius: 999px;
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(10,8,5,0.25);
+  border-top-color: #0a0805;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
 
-.modal-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  z-index: 50;
-  animation: fadeIn 0.3s ease-out;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
-.modal-overlay.show {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
+.modal-enter {
+  animation: slideUp 0.28s ease-out forwards;
 }
-.verification-card {
-  animation: slideIn 0.5s ease-out;
-}
-.search-container {
-  animation: fadeIn 0.8s ease-out;
-}
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
+
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
-.glow-effect {
-  box-shadow: 0 0 40px rgba(212, 175, 55, 0.25);
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
 }
-.logo-text {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+
+/* Carousel — hide scrollbar */
+.carousel-track {
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
+.carousel-track::-webkit-scrollbar { display: none; }
