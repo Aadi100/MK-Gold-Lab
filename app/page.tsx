@@ -150,7 +150,7 @@ const scrollBy = (dir: 1 | -1) => {
       {/* ── HERO ── */}
       <section className="fade-in flex flex-col items-center text-center pt-20 pb-12 px-6">
         <div
-          className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
+          className="w-40 h-40 rounded-full flex items-center justify-center mb-6"
           style={{
             border: "1px solid rgba(201,168,76,0.3)",
             background: "rgba(201,168,76,0.1)",
@@ -168,12 +168,12 @@ const scrollBy = (dir: 1 | -1) => {
           Official Verification System
         </p>
 
-        <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(3rem,8vw,5.5rem)", fontWeight: 300, lineHeight: 1, color: "#e8e0d0", marginBottom: "1rem" }}>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,5.5vw,3.6rem)", fontWeight: 300, lineHeight: 1, color: "#e8e0d0", marginBottom: "1rem" }}>
           MK Gold Lab
         </h1>
 
         <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "#7a7060", letterSpacing: "0.04em", maxWidth: "24rem" }}>
-          Authenticate your silver bar with a single serial number
+          Authenticate your bar with a single serial number
         </p>
       </section>
 
@@ -188,7 +188,7 @@ const scrollBy = (dir: 1 | -1) => {
           backdropFilter: "blur(8px)",
         }}>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.55rem", fontWeight: 400, color: "#e8e0d0", textAlign: "center", marginBottom: "0.3rem" }}>
-            Verify Your Silver Bar
+            Verify Your Bar
           </h2>
           <p style={{ fontSize: "0.75rem", fontWeight: 300, color: "#7a7060", textAlign: "center", marginBottom: "1.5rem", letterSpacing: "0.04em" }}>
             Enter the serial number printed on your bar

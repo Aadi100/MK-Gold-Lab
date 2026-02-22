@@ -267,7 +267,7 @@ export default function Page() {
     e.preventDefault(); setMessage('');
     try {
       const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-      if (res.ok) { setAuthenticated(true); await fetchItems(); await fetchUsers(); }
+      if (res.ok) { setAuthenticated(true); await fetchItems(); await fetchUsers(); await fetchProducts(); }
       else { const txt = await res.text(); setMessage(txt || 'Login failed'); }
     } catch { setMessage('Network error'); }
   }
@@ -425,7 +425,14 @@ export default function Page() {
                           <button style={btnEdit}
                             onMouseEnter={e => { (e.currentTarget).style.background = "rgba(201,168,76,0.22)"; }}
                             onMouseLeave={e => { (e.currentTarget).style.background = "rgba(201,168,76,0.1)"; }}
-                            onClick={() => { setForm({ serialNo: it.serialNo, weight: it.weight, purity: it.purity, certifiedBy: it.certifiedBy, origin: it.origin, metal: it.metal, production: it.production }); setShowModal(true); setEditingSerial(it.serialNo); }}
+                            onClick={() => {
+                              // convert stored ISO to datetime-local value for editing (YYYY-MM-DDTHH:MM)
+                              const prod = it.production ? (() => {
+                                try { return new Date(it.production).toISOString().slice(0,16); } catch { return it.production; }
+                              })() : '';
+                              setForm({ serialNo: it.serialNo, weight: it.weight, purity: it.purity, certifiedBy: it.certifiedBy, origin: it.origin, metal: it.metal, production: prod });
+                              setShowModal(true); setEditingSerial(it.serialNo);
+                            }}
                           >Edit</button>
                           <button style={btnDanger}
                             onMouseEnter={e => { (e.currentTarget).style.background = "rgba(192,57,43,0.12)"; }}
@@ -487,6 +494,8 @@ export default function Page() {
               
             </div>
 
+            
+
             <div style={{ borderTop: "1px solid rgba(201,168,76,0.1)", margin: "1.75rem 0" }} />
 
             {/* Users */}
@@ -540,7 +549,7 @@ export default function Page() {
       <Modal open={showModal} onClose={() => { setShowModal(false); setEditingSerial(null); }}>
         <ModalHeader eyebrow={editingSerial ? 'Editing' : 'New Entry'} title="Silver Bar Record" onClose={() => { setShowModal(false); setEditingSerial(null); }} />
         <form onSubmit={addEntry}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
             <Field label="Serial Number"><Input placeholder="e.g. SB-20240001" value={form.serialNo} onChange={e => setForm({ ...form, serialNo: e.target.value })} /></Field>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
               <Field label="Weight"><Input placeholder="e.g. 1 kg" value={form.weight} onChange={e => setForm({ ...form, weight: e.target.value })} /></Field>
@@ -548,7 +557,7 @@ export default function Page() {
             </div>
             <Field label="Certified By"><Input placeholder="e.g. LBMA" value={form.certifiedBy} onChange={e => setForm({ ...form, certifiedBy: e.target.value })} /></Field>
             <Field label="Origin"><Input placeholder="e.g. Switzerland" value={form.origin} onChange={e => setForm({ ...form, origin: e.target.value })} /></Field>
-            <Field label="Production Date (ISO)"><Input placeholder="e.g. 2024-01-15T00:00:00Z" value={form.production} onChange={e => setForm({ ...form, production: e.target.value })} /></Field>
+            <Field label="Production Date"><Input type="datetime-local" placeholder="Select date and time" value={form.production} onChange={e => setForm({ ...form, production: e.target.value })} /></Field>
           </div>
           <ModalFooter>
             <button type="button" style={btnGhost} onClick={() => { setShowModal(false); setEditingSerial(null); }}>Cancel</button>
