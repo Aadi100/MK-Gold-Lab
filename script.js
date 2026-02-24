@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Using absolute URL if needed, but relative works if hosted on same server
-            const res = await fetch(`/api/bars?serial=${encodeURIComponent(input)}`);
+            const res = await fetch(`/api/bars.php?serial=${encodeURIComponent(input)}`);
             if (!res.ok) {
                 errorMessage.classList.remove('hidden');
                 return;
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Products Carousel Logic ---
     async function initProducts() {
         try {
-            const res = await fetch('/api/products');
+            const res = await fetch('/api/products.php');
             if (!res.ok) return;
             const data = await res.json();
             products = Array.isArray(data) ? data : (data.products || []);

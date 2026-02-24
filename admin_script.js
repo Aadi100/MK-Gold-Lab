@@ -34,10 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    const getHeaders = () => ({
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-    });
+    const getHeaders = (isJson = true) => {
+        const h = { "Authorization": `Bearer ${token}` };
+        if (isJson) h["Content-Type"] = "application/json";
+        return h;
+    };
 
     window.openModal = (id) => {
         document.getElementById(id).classList.add('active');
@@ -53,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Load Data
     async function loadBars() {
         try {
-            const res = await fetch("/api/bars");
+            const res = await fetch("/api/bars.php");
             if (res.ok) {
                 const data = await res.json();
                 renderBars(data.items || []);
@@ -63,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadProducts() {
         try {
-            const res = await fetch("/api/products");
+            const res = await fetch("/api/products.php");
             if (res.ok) {
                 const data = await res.json();
                 renderProducts(data);
@@ -73,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadUsers() {
         try {
-            const res = await fetch("/api/auth/users", { headers: getHeaders() });
+            const res = await fetch("/api/auth/users.php", { headers: getHeaders() });
             if (res.ok) {
                 const data = await res.json();
                 renderUsers(data);
@@ -136,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     barForm.onsubmit = async (e) => {
         e.preventDefault();
         const data = Object.fromEntries(new FormData(barForm).entries());
-        const res = await fetch("/api/bars", { method: "POST", headers: getHeaders(), body: JSON.stringify(data) });
+        const res = await fetch("/api/bars.php", { method: "POST", headers: getHeaders(), body: JSON.stringify(data) });
         if (res.ok) { closeModal('bar-modal'); loadBars(); }
         else alert("Failed to save bar");
     };
@@ -144,9 +145,9 @@ document.addEventListener("DOMContentLoaded", () => {
     productForm.onsubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(productForm);
-        const res = await fetch("/api/products", { 
+        const res = await fetch("/api/products.php", { 
             method: "POST", 
-            headers: { "Authorization": `Bearer ${token}` }, // Form data handles content-type
+            headers: getHeaders(false), // Pass false to not send JSON header
             body: formData 
         });
         if (res.ok) { closeModal('product-modal'); loadProducts(); }
@@ -156,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     userForm.onsubmit = async (e) => {
         e.preventDefault();
         const data = Object.fromEntries(new FormData(userForm).entries());
-        const res = await fetch("/api/auth/users", { method: "POST", headers: getHeaders(), body: JSON.stringify(data) });
+        const res = await fetch("/api/auth/users.php", { method: "POST", headers: getHeaders(), body: JSON.stringify(data) });
         if (res.ok) { closeModal('user-modal'); loadUsers(); }
         else alert("Failed to add user");
     };
@@ -164,13 +165,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Actions
     window.deleteBar = async (serial) => {
         if (!confirm(`Delete ${serial}?`)) return;
-        const res = await fetch(`/api/bars?serial=${serial}`, { method: "DELETE", headers: getHeaders() });
+        const res = await fetch(`/api/bars.php?serial=${serial}`, { method: "DELETE", headers: getHeaders() });
         if (res.ok) loadBars();
     };
 
     window.editBar = async (serial) => {
         try {
-            const res = await fetch(`/api/bars?serial=${serial}`);
+            const res = await fetch(`/api/bars.php?serial=${serial}`);
             if (res.ok) {
                 const json = await res.json();
                 const data = json.data;
@@ -189,13 +190,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.deleteProduct = async (id) => {
         if (!confirm(`Delete product?`)) return;
-        const res = await fetch(`/api/products/${id}`, { method: "DELETE", headers: getHeaders() });
+        const res = await fetch(`/api/products.php?id=${id}`, { method: "DELETE", headers: getHeaders() });
         if (res.ok) loadProducts();
     };
 
     window.editProduct = async (id) => {
         // Find in current data
-        const res = await fetch("/api/products");
+        const res = await fetch("/api/products.php");
         const items = await res.json();
         const item = items.find(i => i.id == id);
         if (item) {
@@ -213,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.deleteUser = async (id) => {
         if (!confirm(`Remove this user?`)) return;
-        const res = await fetch(`/api/auth/users/${id}`, { method: "DELETE", headers: getHeaders() });
+        const res = await fetch(`/api/auth/users.php?id=${id}`, { method: "DELETE", headers: getHeaders() });
         if (res.ok) loadUsers();
         else alert("Failed to remove user");
     };
