@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silver Lab - Login</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body class="antialiased min-h-screen relative flex flex-col justify-center items-center" style="font-family: 'Jost', sans-serif; color: #e8e0d0;">
+    <!-- Background Overlay -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute inset-0 bg-[#0c0b08]/80"></div>
+        <div class="absolute inset-0 bg-[url('bg.jpeg')] bg-cover bg-center opacity-40 grayscale" style="filter: brightness(0.4) contrast(1.1);"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#0c0b08]/30 to-[#0c0b08] opacity-90"></div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="relative z-10 w-full max-w-[400px] p-8 bg-[rgba(23,22,15,0.88)] border border-[rgba(201,168,76,0.28)] rounded-[2px] shadow-2xl backdrop-blur-md">
+        <div class="text-center mb-8">
+            <h1 style="font-family: 'Cormorant Garamond', Georgia, serif;" class="text-3xl font-light text-white mb-2">MK Gold Lab</h1>
+            <p class="text-[0.7rem] uppercase tracking-[0.2em] text-gold-light opacity-60">Admin Authentication</p>
+        </div>
+
+        <form id="login-form" class="space-y-6">
+            <div class="space-y-1.5">
+                <label class="text-[0.6rem] font-medium tracking-[0.18em] uppercase text-[#c9a84c]">Username</label>
+                <input id="username" type="text" required class="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(201,168,76,0.2)] rounded-[2px] text-[#e8e0d0] py-3 px-4 outline-none focus:border-[#c9a84c]">
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-[0.6rem] font-medium tracking-[0.18em] uppercase text-[#c9a84c]">Password</label>
+                <input id="password" type="password" required class="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(201,168,76,0.2)] rounded-[2px] text-[#e8e0d0] py-3 px-4 outline-none focus:border-[#c9a84c]">
+            </div>
+            <button type="submit" class="w-full bg-[#c9a84c] text-[#0a0805] font-medium py-3 rounded-[2px] uppercase tracking-widest text-xs hover:bg-[#e0c47a] transition-all">Sign In</button>
+        </form>
+        <p id="login-error" class="hidden mt-4 text-center text-red-500 text-xs"></p>
+    </div>
+
+    <!-- Copyright Footer -->
+    <footer class="fixed bottom-0 left-0 w-full py-8 text-center pointer-events-none">
+        <p class="text-[0.6rem] opacity-20 tracking-[0.3em] uppercase font-light">
+            © 2026 MK GOLD lab. All Rights Reserved.
+        </p>
+    </footer>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('login-error');
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = 'admin.html';
+                } else {
+                    errorEl.textContent = 'Invalid username or password';
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorEl.textContent = 'Error connecting to server';
+                errorEl.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

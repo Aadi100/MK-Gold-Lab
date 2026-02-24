@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRK - Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0c0b08;
+            font-family: 'Jost', sans-serif;
+            color: #e8e0d0;
+        }
+        .srk-pattern {
+            position: fixed;
+            inset: 0;
+            background-image: url('logo.png'); /* Using logo as pattern */
+            background-size: 150px;
+            background-repeat: repeat;
+            opacity: 0.05;
+            z-index: 0;
+            pointer-events: none;
+            filter: grayscale(1) invert(1);
+        }
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(12,11,8,0.92) 0%, rgba(12,11,8,0.98) 100%);
+            z-index: 1;
+        }
+        .admin-card {
+            background: rgba(23, 21, 18, 0.6);
+            border: 1px solid rgba(201, 168, 76, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        .gold-text { color: #c9a84c; }
+        .gold-border { border-color: #c9a84c; }
+        .gold-bg { background-color: #c9a84c; }
+        
+        table th {
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #c9a84c;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+        }
+        table td {
+            padding: 1rem;
+            font-size: 0.75rem;
+            color: #e8e0d0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-weight: 300;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .edit-btn { color: #c9a84c; border: 1px solid rgba(201, 168, 76, 0.3); padding: 4px 12px; font-size: 0.6rem; border-radius: 2px; }
+        .delete-btn { color: #ff5e5e; border: 1px solid rgba(255, 94, 94, 0.3); padding: 4px 12px; font-size: 0.6rem; border-radius: 2px; margin-left: 8px; }
+        .edit-btn:hover { background: rgba(201, 168, 76, 0.1); }
+        .delete-btn:hover { background: rgba(255, 94, 94, 0.1); }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden">
+    <div class="srk-pattern" style="background-image: url('bg.jpeg'); background-size: cover; opacity: 0.15; filter: grayscale(1) contrast(1.2);"></div>
+    <div class="bg-overlay" style="background: linear-gradient(180deg, rgba(12,11,8,0.85) 0%, rgba(12,11,8,0.95) 100%);"></div>
+
+    <div class="relative z-10 min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="p-8 pb-4 flex justify-between items-center max-w-[1400px] mx-auto w-full">
+            <div>
+                <h1 style="font-family: 'Cormorant Garamond', serif;" class="text-4xl font-light text-white tracking-wide">Admin Panel</h1>
+                <p class="text-[0.7rem] uppercase tracking-[0.3em] gold-text opacity-60 mt-1">Manage bar records, products, and users</p>
+            </div>
+            <div class="flex items-center gap-6">
+                <a href="index.html" class="text-[0.65rem] uppercase tracking-widest gold-text hover:underline">View Site</a>
+                <div class="flex flex-col items-end">
+                    <span class="text-[0.6rem] uppercase tracking-widest opacity-40">Logged in as</span>
+                    <span id="current-username" class="gold-text text-xs font-medium uppercase tracking-wider">...</span>
+                </div>
+                <button id="logout-btn" class="text-[0.65rem] border border-[rgba(255,94,94,0.3)] text-[#ff5e5e] px-4 py-2 uppercase tracking-widest hover:bg-[#ff5e5e] hover:text-white transition-all">Logout</button>
+            </div>
+        </header>
+
+        <main class="p-8 pt-4 space-y-12 max-w-[1400px] mx-auto w-full">
+            
+            <!-- Silver Bar Records Section -->
+            <section class="admin-card rounded-sm overflow-hidden animate-fade-in">
+                <div class="p-6 flex justify-between items-center border-b border-[rgba(201,168,76,0.1)] mb-4">
+                    <div>
+                        <h2 class="text-xl font-light tracking-wide text-white uppercase">Silver Bar Records</h2>
+                        <p class="text-[0.65rem] opacity-50 mt-1">Most recent entries first</p>
+                    </div>
+                    <button onclick="openModal('bar-modal')" class="gold-bg text-black text-[0.65rem] font-bold uppercase tracking-widest px-6 py-3 rounded-sm hover:brightness-110 transition-all flex items-center gap-2">
+                        + ADD ENTRY
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Serial</th>
+                                <th>Weight</th>
+                                <th>Purity</th>
+                                <th>Certified By</th>
+                                <th>Origin</th>
+                                <th>Production</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bars-list">
+                            <!-- Items via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Products Section -->
+            <section class="admin-card rounded-sm overflow-hidden">
+                <div class="p-6 flex justify-between items-center border-b border-[rgba(201,168,76,0.1)] mb-4">
+                    <div>
+                        <h2 class="text-xl font-light tracking-wide text-white uppercase">Products</h2>
+                        <p class="text-[0.65rem] opacity-50 mt-1">Public-facing product catalog</p>
+                    </div>
+                    <button onclick="openModal('product-modal')" class="gold-bg text-black text-[0.65rem] font-bold uppercase tracking-widest px-6 py-3 rounded-sm hover:brightness-110 transition-all flex items-center gap-2">
+                        + ADD PRODUCT
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Weight</th>
+                                <th>Price</th>
+                                <th>Image</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-list">
+                            <!-- Items via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="user-management-section" class="admin-card rounded-sm overflow-hidden hidden">
+                <div class="p-6 flex justify-between items-center border-b border-[rgba(201,168,76,0.1)] mb-4">
+                    <div>
+                        <h2 class="text-xl font-light tracking-wide text-white uppercase">Users List</h2>
+                        <p class="text-[0.65rem] opacity-50 mt-1">Application users and roles</p>
+                    </div>
+                    <button onclick="openModal('user-modal')" class="gold-bg text-black text-[0.65rem] font-bold uppercase tracking-widest px-6 py-3 rounded-sm hover:brightness-110 transition-all flex items-center gap-2">
+                        + CREATE USER
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-list">
+                            <!-- Items via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Bar Modal -->
+    <div id="bar-modal" class="modal">
+        <div class="admin-card p-8 w-full max-w-md relative">
+            <h3 class="text-xl gold-text mb-6 font-light uppercase tracking-widest">Bar Information</h3>
+            <form id="bar-form" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Serial No</label>
+                    <input name="serialNo" required class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[0.6rem] uppercase gold-text tracking-widest">Weight</label>
+                        <input name="weight" class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[0.6rem] uppercase gold-text tracking-widest">Purity</label>
+                        <input name="purity" class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Certified By</label>
+                    <input name="certifiedBy" value="MK Gold Lab" class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Origin</label>
+                    <input name="origin" placeholder="Pakistan" class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Production Date</label>
+                    <input name="production" type="date" class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm text-white">
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal('bar-modal')" class="flex-1 border border-white/10 p-3 text-[0.65rem] uppercase tracking-widest font-medium">Cancel</button>
+                    <button type="submit" class="flex-1 gold-bg text-black font-bold p-3 text-[0.65rem] uppercase tracking-widest">Save Bar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal">
+        <div class="admin-card p-8 w-full max-w-md relative">
+            <h3 class="text-xl gold-text mb-6 font-light uppercase tracking-widest">Product Details</h3>
+            <form id="product-form" class="space-y-4">
+                <input type="hidden" name="id">
+                <input type="hidden" name="existingImg">
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Product Title</label>
+                    <input name="title" required class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Weight (e.g. 1KG)</label>
+                    <input name="weight" required class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Price (e.g. RS 400000)</label>
+                    <input name="price" required class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Image File</label>
+                    <input name="img" type="file" accept="image/*" class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm text-gold/60 file:bg-transparent file:border-0 file:text-gold file:text-xs file:uppercase file:tracking-widest file:mr-4 file:cursor-pointer">
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal('product-modal')" class="flex-1 border border-white/10 p-3 text-[0.65rem] uppercase tracking-widest font-medium">Cancel</button>
+                    <button type="submit" class="flex-1 gold-bg text-black font-bold p-3 text-[0.65rem] uppercase tracking-widest">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="user-modal" class="modal">
+        <div class="admin-card p-8 w-full max-w-md relative">
+            <h3 class="text-xl gold-text mb-6 font-light uppercase tracking-widest">Account Creation</h3>
+            <form id="user-form" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Username</label>
+                    <input name="username" required class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Password</label>
+                    <input name="password" type="password" required class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[0.6rem] uppercase gold-text tracking-widest">Role</label>
+                    <select name="role" class="w-full bg-[#1a1814] border border-gold/20 p-3 rounded-sm outline-none focus:border-gold text-sm text-white">
+                        <option value="admin">Admin</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                </div>
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="closeModal('user-modal')" class="flex-1 border border-white/10 p-3 text-[0.65rem] uppercase tracking-widest font-medium">Cancel</button>
+                    <button type="submit" class="flex-1 gold-bg text-black font-bold p-3 text-[0.65rem] uppercase tracking-widest">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Copyright Footer -->
+    <footer class="relative z-10 py-12 text-center mt-auto border-t border-[rgba(201,168,76,0.1)]">
+        <p class="text-[0.6rem] opacity-20 tracking-[0.4em] uppercase font-light">
+            © 2026 MK GOLD lab. All Rights Reserved.
+        </p>
+    </footer>
+
+    <script src="admin_script.js"></script>
+</body>
+</html>
