@@ -1,6 +1,6 @@
 <?php
 // Database configuration
-$host = 'localhost';
+$host = '127.0.0.1';
 $db   = 'u262457491_srkpk';
 $user = 'u262457491_srkpk_admin';
 $pass = 'bqD4>D7Q&';
