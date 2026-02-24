@@ -1,9 +1,9 @@
 <?php
 // Database configuration
 $host = 'localhost';
-$db   = 'silverlab';
-$user = 'root';
-$pass = '123456';
+$db   = 'u262457491_srkpk';
+$user = 'u262457491_srkpk_admin';
+$pass = 'bqD4>D7Q&';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
