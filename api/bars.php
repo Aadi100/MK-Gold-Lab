@@ -15,7 +15,8 @@ if ($method === 'GET') {
             jsonResponse(['found' => false], 404);
         }
     } else {
-        $stmt = $pdo->query('SELECT * FROM silver_bars ORDER BY id DESC LIMIT 200');
+        $limit = isset($_GET['all']) ? '' : 'LIMIT 200';
+        $stmt = $pdo->query("SELECT * FROM silver_bars ORDER BY id DESC $limit");
         jsonResponse(['items' => $stmt->fetchAll()]);
     }
 }

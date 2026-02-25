@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ['Serial No.', data.serialNo],
             ['Weight', data.weight],
             ['Purity', data.purity],
-            ['Metal', data.metal],
             ['Origin', data.origin],
             ['Certified By', data.certifiedBy],
             ['Production', data.production]
@@ -135,62 +134,63 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.strokeRect(38, 38, canvas.width - 76, canvas.height - 76);
 
         // Logo Area
-        ctx.fillStyle = 'rgba(201,168,76,0.08)';
-        ctx.beginPath(); ctx.arc(400, 130, 65, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#c9a84c'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(400, 130, 65, 0, Math.PI * 2); ctx.stroke();
-        
-        // Checkmark
-        ctx.strokeStyle = '#e0c47a'; ctx.lineWidth = 7;
-        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-        ctx.beginPath(); ctx.moveTo(372, 132); ctx.lineTo(393, 153); ctx.lineTo(430, 110); ctx.stroke();
+        const logoImg = new Image();
+        logoImg.src = 'logo.png';
+        logoImg.onload = function() {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(400, 130, 85, 0, Math.PI * 2); // Reduce logo radius to 85
+            ctx.closePath();
+            ctx.clip();
+            ctx.fillStyle = '#000';
+            ctx.fillRect(315, 45, 170, 170); // Slightly smaller black background circle
+            ctx.drawImage(logoImg, 335, 65, 130, 130); // Slightly smaller logo
+            ctx.restore();
+            // Header Text
+            ctx.fillStyle = '#c9a84c'; ctx.font = '22px Helvetica, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('CERTIFICATE OF AUTHENTICITY', canvas.width / 2, 275);
 
-        // Header Text
-        ctx.fillStyle = '#ffffff'; ctx.font = '300 52px Georgia, serif'; ctx.textAlign = 'center';
-        ctx.fillText('MK Gold Lab', canvas.width / 2, 240);
-        ctx.fillStyle = '#c9a84c'; ctx.font = '16px Helvetica, sans-serif';
-        ctx.fillText('CERTIFICATE OF AUTHENTICITY', canvas.width / 2, 275);
+            // Divider
+            ctx.strokeStyle = 'rgba(201,168,76,0.3)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(100, 300); ctx.lineTo(700, 300); ctx.stroke();
 
-        // Divider
-        ctx.strokeStyle = 'rgba(201,168,76,0.3)'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(100, 300); ctx.lineTo(700, 300); ctx.stroke();
+            // Details
+            const details = [
+                ['Serial Number', currentData.serialNo],
+                ['Weight', currentData.weight],
+                ['Purity', currentData.purity],
+                ['Origin', currentData.origin],
+                ['Certified By', currentData.certifiedBy],
+                ['Production Date', currentData.production],
+            ];
 
-        // Details
-        const details = [
-            ['Serial Number', currentData.serialNo],
-            ['Weight', currentData.weight],
-            ['Purity', currentData.purity],
-            ['Metal', currentData.metal],
-            ['Origin', currentData.origin],
-            ['Certified By', currentData.certifiedBy],
-            ['Production Date', currentData.production],
-        ];
+            details.forEach(([label, value], i) => {
+                const y = 370 + i * 72;
+                ctx.fillStyle = '#c9a84c'; ctx.font = '13px Helvetica, sans-serif'; ctx.textAlign = 'left';
+                ctx.fillText(label.toUpperCase(), 100, y);
+                ctx.fillStyle = '#ffffff'; ctx.font = '22px Georgia, serif'; ctx.textAlign = 'right';
+                ctx.fillText(value || '—', 700, y + 26);
+                ctx.strokeStyle = 'rgba(201,168,76,0.15)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(100, y + 40); ctx.lineTo(700, y + 40); ctx.stroke();
+            });
 
-        details.forEach(([label, value], i) => {
-            const y = 370 + i * 72;
-            ctx.fillStyle = '#c9a84c'; ctx.font = '13px Helvetica, sans-serif'; ctx.textAlign = 'left';
-            ctx.fillText(label.toUpperCase(), 100, y);
-            ctx.fillStyle = '#ffffff'; ctx.font = '22px Georgia, serif'; ctx.textAlign = 'right';
-            ctx.fillText(value || '—', 700, y + 26);
-            ctx.strokeStyle = 'rgba(201,168,76,0.15)'; ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(100, y + 40); ctx.lineTo(700, y + 40); ctx.stroke();
-        });
+            // Footer Text
+            ctx.fillStyle = 'rgba(201,168,76,0.5)'; ctx.font = '13px Helvetica, sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('This certificate verifies the authenticity of the bar issued by MK Gold Lab', canvas.width / 2, 920);
+            ctx.fillStyle = '#7a7060'; ctx.font = '12px Helvetica, sans-serif';
+            ctx.fillText('© 2026 MK Gold Lab. All Rights Reserved.', canvas.width / 2, 960);
 
-        // Footer Text
-        ctx.fillStyle = 'rgba(201,168,76,0.5)'; ctx.font = '13px Helvetica, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('This certificate verifies the authenticity of the silver bar issued by Silver Lab', canvas.width / 2, 920);
-        ctx.fillStyle = '#7a7060'; ctx.font = '12px Helvetica, sans-serif';
-        ctx.fillText('© 2026 Silver Lab. All Rights Reserved.', canvas.width / 2, 960);
-
-        // Download
-        canvas.toBlob((blob) => {
-            if (!blob) return;
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.download = `GoldLab-${currentData.serialNo}.png`;
-            a.href = url; a.click();
-            URL.revokeObjectURL(url);
-        });
+            // Download
+            canvas.toBlob((blob) => {
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.download = `GoldLab-${currentData.serialNo}.png`;
+                a.href = url; a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
     });
 
     // --- Products Carousel Logic ---

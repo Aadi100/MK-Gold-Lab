@@ -11,12 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const currentUser = JSON.parse(userStr);
     document.getElementById("current-username").textContent = currentUser.username;
-    
-    if (currentUser.role === "admin") {
-        const userSection = document.getElementById("user-management-section");
-        if (userSection) userSection.classList.remove("hidden");
-        loadUsers();
-    }
 
     const barForm = document.getElementById("bar-form");
     const productForm = document.getElementById("product-form");
@@ -26,6 +20,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const usersList = document.getElementById("users-list");
     const logoutBtn = document.getElementById("logout-btn");
 
+    const getHeaders = (isJson = true) => {
+        const h = { "Authorization": `Bearer ${token}` };
+        if (isJson) h["Content-Type"] = "application/json";
+        return h;
+    };
+    
+    if (currentUser.role === "admin") {
+        const userSection = document.getElementById("user-management-section");
+        if (userSection) userSection.classList.remove("hidden");
+        loadUsers();
+    } else {
+        // Hide add buttons for non-admins, but keep export button visible
+        document.querySelectorAll('button[onclick*="openModal"]').forEach(btn => btn.style.display = 'none');
+        
+        // Hide all action buttons in the user table if it accidentally renders
+        if (usersList) usersList.innerHTML = '';
+    }
+
     if (logoutBtn) {
         logoutBtn.addEventListener("click", () => {
             localStorage.removeItem("token");
@@ -33,12 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = "login.html";
         });
     }
-
-    const getHeaders = (isJson = true) => {
-        const h = { "Authorization": `Bearer ${token}` };
-        if (isJson) h["Content-Type"] = "application/json";
-        return h;
-    };
 
     window.openModal = (id) => {
         document.getElementById(id).classList.add('active');
@@ -85,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Render Data
     function renderBars(items) {
         if (!barsList) return;
+        const isViewer = currentUser.role !== 'admin';
         barsList.innerHTML = items.map(item => `
             <tr>
                 <td>${item.serialNo}</td>
@@ -94,8 +101,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${item.origin || "—"}</td>
                 <td>${new Date(item.production).toLocaleDateString() || "—"}</td>
                 <td>
+                    ${!isViewer ? `
                     <button onclick="editBar('${item.serialNo}')" class="edit-btn uppercase tracking-widest font-bold">Edit</button>
                     <button onclick="deleteBar('${item.serialNo}')" class="delete-btn uppercase tracking-widest font-bold">Delete</button>
+                    ` : '<span class="text-[0.6rem] opacity-20 uppercase font-bold tracking-widest">View Only</span>'}
                 </td>
             </tr>
         `).join("") || '<tr><td colspan="7" class="text-center italic py-10 opacity-40">No records found.</td></tr>';
@@ -103,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderProducts(items) {
         if (!productsList) return;
+        const isViewer = currentUser.role !== 'admin';
         productsList.innerHTML = items.map(item => `
             <tr>
                 <td class="gold-text font-medium">${item.title}</td>
@@ -110,8 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${item.price}</td>
                 <td class="text-[0.6rem] opacity-30 select-all">${item.img}</td>
                 <td>
+                    ${!isViewer ? `
                     <button onclick="editProduct('${item.id}')" class="edit-btn uppercase tracking-widest font-bold">Edit</button>
                     <button onclick="deleteProduct('${item.id}')" class="delete-btn uppercase tracking-widest font-bold">Delete</button>
+                    ` : '<span class="text-[0.6rem] opacity-20 uppercase font-bold tracking-widest">View Only</span>'}
                 </td>
             </tr>
         `).join("") || '<tr><td colspan="5" class="text-center italic py-10 opacity-40">No products found.</td></tr>';
@@ -119,18 +131,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderUsers(items) {
         if (!usersList) return;
-        usersList.innerHTML = items.map(u => `
+        const totalAdmins = items.filter(u => u.role === 'admin').length;
+
+        usersList.innerHTML = items.map(u => {
+            const isLastAdmin = u.role === 'admin' && totalAdmins <= 1;
+            return `
             <tr>
                 <td class="gold-text font-medium">${u.username}</td>
                 <td><span class="text-[0.6rem] uppercase bg-gold/10 text-gold px-2 py-1 rounded-sm border border-gold/20 tracking-tighter">${u.role}</span></td>
                 <td>${new Date(u.createdAt).toLocaleDateString()}</td>
                 <td>
-                    ${u.username !== 'admin' ? `
+                    <button onclick="editUser('${u.id}')" class="edit-btn uppercase tracking-widest font-bold mr-2">Edit</button>
+                    ${!isLastAdmin ? `
                         <button onclick="deleteUser('${u.id}')" class="delete-btn uppercase tracking-widest font-bold">Remove</button>
                     ` : '<span class="text-[0.6rem] opacity-20 uppercase font-bold tracking-widest">Protected</span>'}
                 </td>
             </tr>
-        `).join("") || '<tr><td colspan="4" class="text-center italic py-10 opacity-40 uppercase tracking-widest text-xs">No staff found.</td></tr>';
+        `}).join("") || '<tr><td colspan="4" class="text-center italic py-10 opacity-40 uppercase tracking-widest text-xs">No staff found.</td></tr>';
     }
 
     // Forms
@@ -163,6 +180,53 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Actions
+    window.exportBars = async () => {
+        try {
+            const res = await fetch("/api/bars.php?all=true");
+            if (res.ok) {
+                const json = await res.json();
+                const items = json.items || [];
+                
+                if (items.length === 0) {
+                    alert("No data to export");
+                    return;
+                }
+
+                // Define headers
+                const headers = ["Serial No", "Weight", "Purity", "Certified By", "Origin", "Production Date"];
+                
+                // Create CSV content
+                const csvRows = [headers.join(",")];
+                
+                items.forEach(item => {
+                    const row = [
+                        `"${item.serialNo}"`,
+                        `"${item.weight || ''}"`,
+                        `"${item.purity || ''}"`,
+                        `"${item.certifiedBy || ''}"`,
+                        `"${item.origin || ''}"`,
+                        `"${item.production || ''}"`
+                    ];
+                    csvRows.push(row.join(","));
+                });
+
+                // Download file
+                const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `bars-export-${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.error("Export failed:", error);
+            alert("Export failed");
+        }
+    };
+
     window.deleteBar = async (serial) => {
         if (!confirm(`Delete ${serial}?`)) return;
         const res = await fetch(`/api/bars.php?serial=${serial}`, { method: "DELETE", headers: getHeaders() });
@@ -209,6 +273,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 productForm.querySelector('[name="existingImg"]').value = item.img || "";
             }
             openModal('product-modal');
+        }
+    };
+
+    window.openCreateUserModal = () => {
+        userForm.reset();
+        if (userForm.querySelector('[name="id"]')) userForm.querySelector('[name="id"]').value = "";
+        openModal('user-modal');
+    };
+
+    window.editUser = async (id) => {
+        // Find in current data
+        const res = await fetch("/api/auth/users.php", { headers: getHeaders() });
+        if (res.ok) {
+            const users = await res.json();
+            const user = users.find(u => u.id == id);
+            if (user) {
+                userForm.reset(); 
+                if (userForm.querySelector('[name="id"]')) userForm.querySelector('[name="id"]').value = user.id;
+                
+                // Set fields
+                if (userForm.querySelector('[name="username"]')) userForm.querySelector('[name="username"]').value = user.username;
+                if (userForm.querySelector('[name="role"]')) userForm.querySelector('[name="role"]').value = user.role;
+                
+                // Clear password (backend handles empty password as "no change")
+                if (userForm.querySelector('[name="password"]')) userForm.querySelector('[name="password"]').value = "";
+
+                openModal('user-modal');
+            }
         }
     };
 

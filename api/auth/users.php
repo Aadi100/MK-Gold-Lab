@@ -12,11 +12,25 @@ if ($method === 'GET') {
 if ($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     $username = $data['username'] ?? '';
-    $password = password_hash($data['password'] ?? '', PASSWORD_DEFAULT);
     $role = $data['role'] ?? 'admin';
-
-    $stmt = $pdo->prepare('INSERT INTO users (username, password, role) VALUES (?, ?, ?)');
-    $stmt->execute([$username, $password, $role]);
+    $id = $data['id'] ?? null;
+    
+    if ($id) {
+        // Update existing user
+        if (!empty($data['password'])) {
+            $password = password_hash($data['password'], PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare('UPDATE users SET username = ?, password = ?, role = ? WHERE id = ?');
+            $stmt->execute([$username, $password, $role, $id]);
+        } else {
+            $stmt = $pdo->prepare('UPDATE users SET username = ?, role = ? WHERE id = ?');
+            $stmt->execute([$username, $role, $id]);
+        }
+    } else {
+        // Create new user
+        $password = password_hash($data['password'] ?? '', PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare('INSERT INTO users (username, password, role) VALUES (?, ?, ?)');
+        $stmt->execute([$username, $password, $role]);
+    }
     jsonResponse(['ok' => true]);
 }
 
