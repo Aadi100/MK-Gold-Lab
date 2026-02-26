@@ -6,6 +6,12 @@ $user = 'u262457491_srkpk_admin';
 $pass = 'bqD4>D7Q&';
 $charset = 'utf8mb4';
 
+// $host = '127.0.0.1';
+// $db   = 'silverlab';
+// $user = 'root';
+// $pass = '';
+// $charset = 'utf8mb4';
+
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
